@@ -1,0 +1,182 @@
+<div>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+      <div class="md:flex md:items-center md:justify-between">
+        <div class="flex-1 min-w-0">
+          <h1 class="text-3xl font-bold text-slate-900">
+            CI/CD Dashboard
+          </h1>
+          <p class="mt-2 text-slate-600">
+            Monitor builds, deployments, and pipeline health
+          </p>
+        </div>
+        <div class="mt-4 flex md:mt-0 md:ml-4">
+          <.link patch={~p"/repositories/new"}>
+            <.button class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+              <.icon name="hero-plus" class="h-5 w-5 mr-2" /> Add Repository
+            </.button>
+          </.link>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
+      <div :for={repository <- @repositories} class="flex">
+        <.card id={"repository-card-#{repository.id}"} status={repository.status} class="flex-1">
+          <:header></:header>
+
+          <:content>
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex items-center space-x-3 flex-1 min-w-0">
+                <div class="flex-shrink-0">
+                  <div class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
+                    <.icon name="hero-code-bracket" class="h-6 w-6 text-slate-600" />
+                  </div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h3 class="text-lg font-semibold text-slate-900 truncate">
+                    {repository.name}
+                  </h3>
+                  <div class="flex items-center mt-1">
+                    <.icon name="hero-code-bracket-square" class="h-4 w-4 text-slate-400 mr-1" />
+                    <span class="text-sm text-slate-500 font-medium">
+                      {if repository.branch, do: repository.branch, else: "main"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <.status_badge status={repository.status} />
+            </div>
+
+            <div class="mb-3 p-3 bg-slate-50 rounded-lg">
+              <%= if repository.commit_message do %>
+                <p class="text-sm text-slate-700 font-medium mb-2 line-clamp-2">
+                  {repository.commit_message}
+                </p>
+              <% else %>
+                <p class="text-sm text-slate-500 italic mb-2">
+                  No commit message
+                </p>
+              <% end %>
+              <%= if repository.commit_sha do %>
+                <div class="flex items-center justify-between">
+                  <.copy_button text={repository.commit_sha}>
+                    {String.slice(repository.commit_sha, 0, 8)}
+                  </.copy_button>
+                  <div class="flex items-center text-xs text-slate-500">
+                    <.icon name="hero-calendar" class="h-3 w-3 mr-1" />
+                    <.relative_time datetime={repository.started_at} />
+                  </div>
+                </div>
+              <% end %>
+            </div>
+
+            <div class="mb-3">
+              <div class="flex items-center justify-between text-sm mb-2">
+                <span class="text-slate-600 font-medium">Build Status</span>
+                <%= if repository.status == :running do %>
+                  <span class="text-blue-600 font-medium">In Progress</span>
+                <% else %>
+                  <span class="text-slate-600">
+                    <%= if repository.finished_at do %>
+                      Completed&nbsp;<.relative_time datetime={repository.finished_at} />
+                    <% else %>
+                      Not finished
+                    <% end %>
+                  </span>
+                <% end %>
+              </div>
+
+              <%= if repository.status == :running do %>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                  <div class="bg-blue-500 h-2 rounded-full animate-pulse" style="width: 65%">
+                  </div>
+                </div>
+              <% end %>
+            </div>
+
+            <div class="space-y-2 mb-4">
+              <%= if repository.started_at do %>
+                <div class="flex items-center text-xs text-slate-500">
+                  <div class="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                  <.icon name="hero-play" class="h-3 w-3 mr-1" /> Started&nbsp;
+                  <.relative_time datetime={repository.started_at} />
+                </div>
+              <% end %>
+
+              <%= if repository.finished_at do %>
+                <div class="flex items-center text-xs text-slate-500">
+                  <div class={[
+                    "w-2 h-2 rounded-full mr-3",
+                    case repository.status do
+                      :success -> "bg-green-500"
+                      :failure -> "bg-red-500"
+                      _ -> "bg-gray-500"
+                    end
+                  ]}>
+                  </div>
+                  <.icon name="hero-flag" class="h-3 w-3 mr-1" /> Finished&nbsp;
+                  <.relative_time datetime={repository.finished_at} />
+                </div>
+              <% end %>
+            </div>
+          </:content>
+
+          <:actions>
+            <div class="flex items-center justify-between">
+              <div class="flex space-x-3">
+                <%= if repository.status == :running do %>
+                  <button
+                    class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 rounded-md hover:bg-red-100 transition-colors"
+                    title="Cancel build"
+                  >
+                    <.icon name="hero-stop" class="h-3 w-3 mr-1" /> Cancel
+                  </button>
+                <% else %>
+                  <button
+                    class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors"
+                    title="Rebuild"
+                  >
+                    <.icon name="hero-arrow-path" class="h-3 w-3 mr-1" /> Rebuild
+                  </button>
+                <% end %>
+
+                <button
+                  class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-50 rounded-md hover:bg-slate-100 transition-colors"
+                  title="View logs"
+                >
+                  <.icon name="hero-document-text" class="h-3 w-3 mr-1" /> Logs
+                </button>
+              </div>
+
+              <button
+                class="inline-flex items-center p-1.5 text-slate-400 hover:text-red-600 rounded-md hover:bg-red-50 transition-colors"
+                id={"delete-repository-#{repository.id}"}
+                title="Delete repository"
+                phx-click={
+                  JS.push("delete", value: %{id: repository.id})
+                  |> hide("#repository-#{repository.id}")
+                }
+                data-confirm="Are you sure you want to delete this repository?"
+              >
+                <.icon name="hero-trash" class="h-4 w-4" />
+              </button>
+            </div>
+          </:actions>
+        </.card>
+      </div>
+    </div>
+  </div>
+</div>
+
+<.modal :if={@live_action in [:new, :edit]} id="repository-modal" show on_cancel={JS.patch(~p"/")}>
+  <.live_component
+    module={FakeCiWeb.RepositoryLive.FormComponent}
+    id={@repository.id || :new}
+    title={@page_title}
+    action={@live_action}
+    repository={@repository}
+    patch={~p"/"}
+  />
+</.modal>
