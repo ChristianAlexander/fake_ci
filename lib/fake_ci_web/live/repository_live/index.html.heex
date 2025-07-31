@@ -21,7 +21,7 @@
     </div>
 
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
-      <div :for={repository <- @repositories} class="flex">
+      <div :for={repository <- @repositories} :key={repository.id} class="flex">
         <.card id={"repository-card-#{repository.id}"} status={repository.status} class="flex-1">
           <:header></:header>
 
