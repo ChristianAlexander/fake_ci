@@ -10,7 +10,6 @@ defmodule FakeCi.CI.Repository do
     field :commit_sha, :string
     field :commit_message, :string
     field :finished_at, :utc_datetime
-    field :user_id, :id
 
     timestamps(type: :utc_datetime)
   end

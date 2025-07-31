@@ -10,11 +10,8 @@ defmodule FakeCi.Repo.Migrations.CreateRepositories do
       add :branch, :string
       add :started_at, :utc_datetime
       add :finished_at, :utc_datetime
-      add :user_id, references(:users, on_delete: :nothing)
 
       timestamps(type: :utc_datetime)
     end
-
-    create index(:repositories, [:user_id])
   end
 end
